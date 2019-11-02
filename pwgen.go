@@ -64,7 +64,7 @@ func setConfig() {
 		log.Fatalln("Minimum word length exceeds maximum")
 	}
 	if cfg.minSepLength > cfg.maxSepLength {
-		log.Fatalln("Minimum seperator length exceeds maximum")
+		log.Fatalln("Minimum separator length exceeds maximum")
 	}
 	if cfg.wordsPerPassword < 1 {
 		log.Fatalln("Cannot specify less than one word per password")
@@ -137,8 +137,8 @@ func randWord(wordList []string) (word string) {
 	return
 }
 
-// Generate a random seperator string
-func seperator(minSepLen int, maxSepLen int, symbols []string) (sep string) {
+// Generate a random separator string
+func separator(minSepLen int, maxSepLen int, symbols []string) (sep string) {
 	sepMax := len(symbols)
 	var sepLen int
 	// If min and max lengths are the same, there's no point generating a
@@ -165,10 +165,10 @@ func main() {
 		var password string
 		for i := 0; i < cfg.wordsPerPassword; i++ {
 			password += randWord(words)
-			password += seperator(cfg.minSepLength, cfg.maxSepLength, symbols)
+			password += separator(cfg.minSepLength, cfg.maxSepLength, symbols)
 		}
 		if cfg.suffixSepLength > 0 {
-			password += seperator(cfg.suffixSepLength, cfg.suffixSepLength, symbols)
+			password += separator(cfg.suffixSepLength, cfg.suffixSepLength, symbols)
 		}
 		fmt.Println(password)
 	}
