@@ -4,7 +4,6 @@ import (
 	"bufio"
 	urand "crypto/rand"
 	"encoding/binary"
-	"flag"
 	"fmt"
 	"log"
 	"math/rand"
@@ -26,19 +25,6 @@ type config struct {
 }
 
 var cfg config
-var flag_args []string
-var flag_filename string
-var flag_pwds int
-var flag_short bool
-
-// init initializes the command line flags.
-func init() {
-	flag.BoolVar(&flag_short, "short", false, "Generate shorter passwords")
-	flag.IntVar(&flag_pwds, "passwords", 5, "Number of passwords to generate")
-	flag.StringVar(&flag_filename, "file", "words.txt", "Words file to populate the generator with")
-	flag.Parse()
-	flag_args = flag.Args()
-}
 
 // setConfig defines some rational defaults and overrides them when required.
 func setConfig(format string) {
@@ -47,10 +33,10 @@ func setConfig(format string) {
 	cfg.maxSepLength = 3
 	cfg.minWordLength = 6
 	cfg.maxWordLength = 9
-	cfg.numPasswords = flag_pwds
+	cfg.numPasswords = 5
 	cfg.suffixSepLength = 0
 	cfg.symbolsList = "123456789!$%*@"
-	cfg.wordsFile = flag_filename
+	cfg.wordsFile = "/var/local/words.txt"
 	cfg.wordsPerPassword = 4
 	if format == "short" {
 		cfg.minSepLength = 2
