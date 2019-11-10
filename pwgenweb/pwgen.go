@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
+	"net/http"
 	"os"
 	"strings"
 )
@@ -40,7 +41,7 @@ func init() {
 }
 
 // setConfig defines some rational defaults and overrides them when required.
-func setConfig() {
+func setConfig(format string) {
 	// Set some reasonable defaults
 	cfg.minSepLength = 3
 	cfg.maxSepLength = 3
@@ -51,7 +52,7 @@ func setConfig() {
 	cfg.symbolsList = "123456789!$%*@"
 	cfg.wordsFile = flag_filename
 	cfg.wordsPerPassword = 4
-	if flag_short {
+	if format == "short" {
 		cfg.minSepLength = 2
 		cfg.maxSepLength = 2
 		cfg.minWordLength = 5
@@ -154,14 +155,7 @@ func separator(minSepLen int, maxSepLen int, symbols []string) (sep string) {
 	return
 }
 
-func main() {
-	setConfig()
-	// Populate the symbols and words slices
-	symbols := strings.Split(cfg.symbolsList, "")
-	words, err := readLines(cfg.wordsFile)
-	if err != nil {
-		log.Fatalf("readLines: %s", err)
-	}
+func genpw(w http.ResponseWriter, symbols []string, words []string) {
 	// Iterate over the number of passwords to generate
 	for p := 0; p < cfg.numPasswords; p++ {
 		var password string
@@ -173,6 +167,35 @@ func main() {
 		if cfg.suffixSepLength > 0 {
 			password += separator(cfg.suffixSepLength, cfg.suffixSepLength, symbols)
 		}
-		fmt.Println(password)
+		fmt.Fprintf(w, "%s<br />\n", password)
 	}
+}
+
+func main() {
+	// Create word and symbol slices for default, strong passwords
+	setConfig("default")
+	symbols := strings.Split(cfg.symbolsList, "")
+	// Populate the symbols and words slices
+	words, err := readLines(cfg.wordsFile)
+	if err != nil {
+		log.Fatalf("readLines: %s", err)
+	}
+	fmt.Printf("Words loaded: %d\n", len(words))
+	// Create word and symbol slices for shorter passwords
+	setConfig("short")
+	ssymbols := strings.Split(cfg.symbolsList, "")
+	// Populate the symbols and words slices
+	swords, err := readLines(cfg.wordsFile)
+	if err != nil {
+		log.Fatalf("readLines: %s", err)
+	}
+	fmt.Printf("Short words loaded: %d\n", len(swords))
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, "<h1>Strong Format Passwords</h1>")
+		genpw(w, symbols, words)
+		fmt.Fprintln(w, "<h1>Short Format Passwords</h1>")
+		genpw(w, ssymbols, swords)
+	})
+
+	http.ListenAndServe(":8080", nil)
 }
