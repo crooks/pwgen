@@ -36,7 +36,7 @@ func setConfig(format string) {
 	cfg.numPasswords = 5
 	cfg.suffixSepLength = 0
 	cfg.symbolsList = "123456789!$%*@"
-	cfg.wordsFile = "/var/local/words.txt"
+	cfg.wordsFile = "/var/local/pwgen/words.txt"
 	cfg.wordsPerPassword = 4
 	if format == "short" {
 		cfg.minSepLength = 2
@@ -177,10 +177,23 @@ func main() {
 	}
 	fmt.Printf("Short words loaded: %d\n", len(swords))
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprintln(w, `<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+<meta http-equiv="Content-Style-Type" content="text/css2" />
+<title>Password Generator</title>
+<style type="text/css">
+  BODY {font-family: "Courier New", Courier, monospace;}
+</style>
+</head>
+
+<body>`)
 		fmt.Fprintln(w, "<h1>Strong Format Passwords</h1>")
 		genpw(w, symbols, words)
 		fmt.Fprintln(w, "<h1>Short Format Passwords</h1>")
 		genpw(w, ssymbols, swords)
+		fmt.Fprintln(w, "</body>\n</html>")
 	})
 
 	http.ListenAndServe(":8080", nil)
