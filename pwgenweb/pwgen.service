@@ -1,0 +1,9 @@
+[Unit]
+Description=Password Generator Web Interface
+
+[Service]
+ExecStart=/usr/local/bin/pwgenweb
+Type=simple
+
+[Install]
+WantedBy=multi-user.target
