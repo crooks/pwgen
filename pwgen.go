@@ -37,6 +37,7 @@ func init() {
 	flag.StringVar(&flag_filename, "file", "words.txt", "Words file to populate the generator with")
 	flag.Parse()
 	flag_args = flag.Args()
+	crand = rand.New(NewCryptoRandSource())
 }
 
 // setConfig defines some rational defaults and overrides them when required.
@@ -75,6 +76,8 @@ func setConfig() {
 // math/rand.  This means we can use many of the math/rand functions with
 // a cryptographically random source.
 type CryptoRandSource struct{}
+
+var crand *rand.Rand
 
 func NewCryptoRandSource() CryptoRandSource {
 	return CryptoRandSource{}
@@ -133,7 +136,7 @@ func writeLines(lines []string, path string) error {
 // randWord returns a random element of a given slice
 func randWord(wordList []string) (word string) {
 	listLen := len(wordList)
-	word = strings.Title(wordList[randomInt(listLen)])
+	word = strings.Title(wordList[crand.Intn(listLen)])
 	return
 }
 
@@ -146,10 +149,10 @@ func separator(minSepLen int, maxSepLen int, symbols []string) (sep string) {
 	if minSepLen == maxSepLen {
 		sepLen = minSepLen
 	} else {
-		sepLen = randomInt(maxSepLen-minSepLen+1) + minSepLen
+		sepLen = crand.Intn(maxSepLen-minSepLen+1) + minSepLen
 	}
 	for i := 0; i < sepLen; i++ {
-		sep += symbols[randomInt(sepMax)]
+		sep += symbols[crand.Intn(sepMax)]
 	}
 	return
 }

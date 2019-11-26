@@ -25,6 +25,11 @@ type config struct {
 }
 
 var cfg config
+var crand *rand.Rand
+
+func init() {
+	crand = rand.New(NewCryptoRandSource())
+}
 
 // setConfig defines some rational defaults and overrides them when required.
 func setConfig(format string) {
@@ -77,12 +82,6 @@ func (_ CryptoRandSource) Seed(_ int64) {}
 
 // And so ends the random magic section
 
-// randomInt returns an integer between 0 and max
-func randomInt(max int) int {
-	r := rand.New(NewCryptoRandSource())
-	return r.Intn(max)
-}
-
 // readLines reads a text file and stores each line as a slice item.
 func readLines(path string) ([]string, error) {
 	file, err := os.Open(path)
@@ -120,7 +119,7 @@ func writeLines(lines []string, path string) error {
 // randWord returns a random element of a given slice
 func randWord(wordList []string) (word string) {
 	listLen := len(wordList)
-	word = strings.Title(wordList[randomInt(listLen)])
+	word = strings.Title(wordList[crand.Intn(listLen)])
 	return
 }
 
@@ -133,10 +132,10 @@ func separator(minSepLen int, maxSepLen int, symbols []string) (sep string) {
 	if minSepLen == maxSepLen {
 		sepLen = minSepLen
 	} else {
-		sepLen = randomInt(maxSepLen-minSepLen+1) + minSepLen
+		sepLen = crand.Intn(maxSepLen-minSepLen+1) + minSepLen
 	}
 	for i := 0; i < sepLen; i++ {
-		sep += symbols[randomInt(sepMax)]
+		sep += symbols[crand.Intn(sepMax)]
 	}
 	return
 }
