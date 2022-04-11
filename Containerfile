@@ -15,8 +15,8 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 GO111MODULE=on go build -a -ldflags "-
 
 RUN test -n "$VERSION" || (echo "VERSION not set" && false)
 
-# Use Red Hat UBI base image
-FROM ubi-minimal:latest
+# Use the scratch image since we only need the go binary
+FROM scratch
 
 ARG VERSION
 
