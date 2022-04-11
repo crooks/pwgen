@@ -1,0 +1,32 @@
+stages:
+  - config
+  - build
+  - tidy
+
+config-job:
+  stage: config
+  script:
+    - made_config=no
+    - made_config_dir=no
+    - if [ ! -d $HOME/.config/containers ]; then mkdir -p $HOME/.config/containers; made_config_dir=yes; fi
+    - if [ ! -f $HOME/.config/containers/registries.conf ]; then echo -e "unqualified-search-registries = ['$NEXUS_REGISTRY_URL:$NEXUS_PORT']\n[[registry]]\nlocation=\"$NEXUS_REGISTRY_URL:$NEXUS_PORT\"\ninsecure=true\n" > $HOME/.config/containers/registries.conf; made_config=yes; fi
+
+build-job:
+  stage: build
+  script:
+    - podman login $NEXUS_REGISTRY_URL:$NEXUS_PORT -u $NEXUS_USER -p $NEXUS_PASSWORD
+    - podman login --tls-verify=false -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - version=latest
+    - podman build -f Containerfile --label pwgen=1 --build-arg VERSION=$version -t $CI_REGISTRY/$CI_PROJECT_ROOT_NAMESPACE/$CI_PROJECT_NAME:$version .
+    - podman push $CI_REGISTRY/$CI_PROJECT_ROOT_NAMESPACE/$CI_PROJECT_NAME:${version}
+
+tidy-job:
+  stage: tidy
+  script:
+    - if [ $made_config == "yes" ]; then rm $HOME/.config/containers/registries.conf; fi
+    - if [ $made_config_dir == "yes" ]; then rmdir -p $HOME/.config/containers/ || true; fi
+    - podman rmi -a
+    - podman logout $CI_REGISTRY || true
+    - podman logout $NEXUS_REGISTRY_URL:$NEXUS_PORT || true
+  rules:
+    - when: always
